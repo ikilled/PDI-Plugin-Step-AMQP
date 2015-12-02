@@ -76,6 +76,19 @@ abstract class BaseConsumerProcessor extends BaseProcessor
             row[data.deliveryTagIndex] = data.amqpTag;
         }
 
+        // WIP adding header fields and content to row 
+        plugin.logDebug("data.headers: " + data.toString() );
+        System.out.println("data.headers: " + data.toString() );
+        // System.out.println("data.headersNamesFieldsIndexes: " + data.headersNamesFieldsIndexes.toString() );
+        if ( data.headers != null && data.headers.size() > 0 ) {
+            int headerIndex;
+            plugin.logDebug("data.headers: " + data.headers.toString() );
+            for( String headerName : data.headers.keySet() ) {
+                headerIndex = data.headersNamesFieldsIndexes.get(headerName);
+                row[headerIndex] = data.headers.get(headerName);
+            }
+        }
+
         // put the row to the output row stream
         plugin.putRow(data.outputRowMeta, row);
         plugin.incrementLinesInput();

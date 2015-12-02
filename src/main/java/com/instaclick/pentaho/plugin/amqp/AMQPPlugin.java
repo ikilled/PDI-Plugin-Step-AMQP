@@ -1,6 +1,8 @@
 package com.instaclick.pentaho.plugin.amqp;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.trans.Trans;
@@ -148,6 +150,7 @@ public class AMQPPlugin extends BaseStep implements StepInterface
         String username = environmentSubstitute(meta.getUsername());
         String deliveryTagField = environmentSubstitute(meta.getDeliveryTagField());
         String password = decryptPasswordOptionallyEncrypted(environmentSubstitute(meta.getPassword()));
+        
 
         if ( ! Const.isEmpty(meta.getPort())) {
             port = Integer.parseInt(environmentSubstitute(meta.getPort()));
@@ -164,6 +167,17 @@ public class AMQPPlugin extends BaseStep implements StepInterface
         // get field index
         data.bodyFieldIndex = data.outputRowMeta.indexOfValue(body);
         data.target         = environmentSubstitute(meta.getTarget());
+        data.headersNamesFieldsIndexes = new HashMap<String,Integer>();
+        System.out.println("getHeadersNames2FieldsNames : "+meta.getHeadersNames2FieldsNames().toString() );
+        String fieldName;
+        // foreach header config row
+        for ( String headerName : meta.getHeadersNames2FieldsNames().keySet() ) {
+            fieldName = meta.getHeadersNames2FieldsNames().get(headerName);
+            data.headersNamesFieldsIndexes.put( fieldName, data.outputRowMeta.indexOfValue(fieldName) );
+        }
+
+        
+        data.headersNames2FieldsNames = meta.getHeadersNames2FieldsNames();
         data.bindings       = meta.getBindings();
         data.limit          = meta.getLimit();
         data.prefetchCount  = meta.getPrefetchCount();

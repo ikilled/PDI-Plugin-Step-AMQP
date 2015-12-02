@@ -4,6 +4,8 @@ import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import static org.pentaho.di.core.encryption.KettleTwoWayPasswordEncoder.decryptPasswordOptionallyEncrypted;
 
 public class AMQPPluginData extends BaseStepData implements StepDataInterface
@@ -23,6 +25,8 @@ public class AMQPPluginData extends BaseStepData implements StepDataInterface
     public RowMetaInterface outputRowMeta;
     public Integer bodyFieldIndex = null;
     public Integer routingIndex = null;
+    public HashMap<String,Integer> headersNamesFieldsIndexes = null;
+    public HashMap<String,String> headersNames2FieldsNames = null;
 
     public boolean isTransactional = false;
     public boolean isProducer = false;
@@ -36,6 +40,7 @@ public class AMQPPluginData extends BaseStepData implements StepDataInterface
     public boolean isRequeue = false;
     public String exchtype = "";
     public String body = null;
+    public Map<String,Object> headers;
     public String routing;
     public String target;
     public long amqpTag;

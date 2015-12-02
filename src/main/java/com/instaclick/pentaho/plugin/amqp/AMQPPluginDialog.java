@@ -165,6 +165,10 @@ public class AMQPPluginDialog extends BaseStepDialog implements StepDialogInterf
     private FormData formDeliveryTagLabel;
     private FormData formDeliveryTagText;
 
+    private Label        labelHeaders;
+    private TableView    tableHeaders;
+    private FormData     formHeadersLabel;
+    private FormData     formHeadersText;
 
     private Label labelTransactional;
     private Button checkTransactional;
@@ -366,11 +370,11 @@ public class AMQPPluginDialog extends BaseStepDialog implements StepDialogInterf
         wTabFolder.setSimple( false );
 
         ///////////////////////
-        // CONNECTION TAB
+        // GENERAL TAB (previously named Connection Tab)
         //
 
         // ////////////////////////
-        // START OF Connection TAB///
+        // START OF General TAB///
         // /
         wConnectionTab = new CTabItem( wTabFolder, SWT.NONE );
         wConnectionTab.setText( getString("AmqpPlugin.ConnectionTab.TabTitle" ) );
@@ -673,7 +677,39 @@ public class AMQPPluginDialog extends BaseStepDialog implements StepDialogInterf
 
         textRouting.setLayoutData(formRoutingText);
 
+        // Headers table
+        labelHeaders = new Label(wConnectionComp, SWT.NONE);
 
+        labelHeaders.setText(getString("AmqpPlugin.Headers.Label"));
+        props.setLook(labelHeaders);
+
+        formHeadersLabel      = new FormData();
+        formHeadersLabel.left = new FormAttachment(0, 0);
+        formHeadersLabel.top  = new FormAttachment(textRouting, margin);
+        labelHeaders.setLayoutData(formHeadersLabel);
+
+
+        ColumnInfo[] colinf2  = new ColumnInfo[]{
+            new ColumnInfo(getString("AmqpPlugin.Headers.Column.HeaderName"), ColumnInfo.COLUMN_TYPE_TEXT, false),
+            new ColumnInfo(getString("AmqpPlugin.Headers.Column.HeaderField"), ColumnInfo.COLUMN_TYPE_TEXT, false)
+        };
+
+        tableHeaders = new TableView(transMeta, wConnectionComp, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL,
+            colinf2,
+            input.getHeadersNames2FieldsNames().size(),
+            modifyListener,
+            props
+        );
+
+        formHeadersText        = new FormData();
+        formHeadersText.left   = new FormAttachment(0, 0);
+        formHeadersText.top    = new FormAttachment(labelHeaders, margin);
+        formHeadersText.right  = new FormAttachment(100, 0);
+        formHeadersText.bottom = new FormAttachment(100, -50);
+
+        tableHeaders.setLayoutData(formHeadersText);
+
+ 
         fdConnectionComp = new FormData();
         fdConnectionComp.left = new FormAttachment( 0, 0 );
         fdConnectionComp.top = new FormAttachment( 0, 0 );
@@ -685,7 +721,7 @@ public class AMQPPluginDialog extends BaseStepDialog implements StepDialogInterf
         wConnectionTab.setControl( wConnectionComp );
 
         // ///////////////////////////////////////////////////////////
-        // / END OF Connection TAB
+        // / END OF General TAB
         // ///////////////////////////////////////////////////////////
 
 
@@ -704,7 +740,7 @@ public class AMQPPluginDialog extends BaseStepDialog implements StepDialogInterf
         wDeclareComp.setLayout( declareLayout );
 
 
-        // DecalreOption
+        // DeclareOption
         labelDeclare = new Label(wDeclareComp, SWT.RIGHT);
         labelDeclare.setText(getString("AmqpPlugin.Declare.Label"));
         props.setLook(labelDeclare);
@@ -1334,6 +1370,26 @@ public class AMQPPluginDialog extends BaseStepDialog implements StepDialogInterf
         tableBinding.optWidth(true);
         setModeDependendFileds();
 
+        int i = 0;
+        for( String header_name : input.getHeadersNames2FieldsNames().keySet() ) {
+            final String field_name = input.getHeadersNames2FieldsNames().get(header_name);
+            final TableItem item  = tableHeaders.table.getItem(i);
+
+            if ( ! Const.isEmpty(header_name)) {
+                item.setText(1, header_name);
+            }
+
+            if ( ! Const.isEmpty(field_name)) {
+                item.setText(2, field_name);
+            }
+
+            i++;
+        }
+
+        tableHeaders.setRowNums();
+        tableHeaders.optWidth(true);
+        setModeDependendFileds();
+
         wStepname.selectAll();
     }
 
@@ -1400,9 +1456,32 @@ public class AMQPPluginDialog extends BaseStepDialog implements StepDialogInterf
             return;
         }
 
+        //Save Message Headers Configuration Table
+        int headersCount = tableHeaders.nrNonEmpty();
+        System.out.println("headersCount:"+headersCount);
+
+
+        for (int i = 0; i< headersCount; i++) {
+            TableItem item = tableHeaders.getNonEmpty(i);
+
+            if (item == null) {
+                continue;
+            }
+
+            String header_name  = item.getText(1);
+            String field_name = item.getText(2);
+
+            if (Const.isEmpty(header_name)) {
+                continue;
+            }
+
+            logMinimal("input.addHeaderName2FieldName( header_name:"+header_name+", field_name:"+field_name+" ): ");
+            input.addHeaderName2FieldName(header_name, field_name);
+        }
+
+
         //Save Binding Table
         int count = tableBinding.nrNonEmpty();
-
 
 
         if ( input.isConsumer() && input.isTransactional() && input.getPrefetchCount() > 0 ) {

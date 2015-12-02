@@ -10,6 +10,8 @@ import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.ShutdownSignalException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import org.pentaho.di.core.exception.KettleStepException;
 
 public class WaitingConsumerProcessor extends BaseConsumerProcessor
@@ -68,10 +70,17 @@ public class WaitingConsumerProcessor extends BaseConsumerProcessor
         final byte[] body       = delivery.getBody();
         final Envelope envelope = delivery.getEnvelope();
         final long tag          = envelope.getDeliveryTag();
+        // final HashMap<String,Object> headers = (HashMap)delivery.getProperties().getHeaders(); // got from: https://www.rabbitmq.com/releases/rabbitmq-java-client/v3.5.6/rabbitmq-java-client-javadoc-3.5.6/com/rabbitmq/client/QueueingConsumer.Delivery.html
+        final Map<String,Object> headers;
+        if ( delivery.getProperties() != null )
+            headers = delivery.getProperties().getHeaders();
+        else
+            headers = null;
 
         data.routing = envelope.getRoutingKey();
         data.body    = new String(body);
         data.amqpTag = tag;
+        data.headers = headers;
 
         return true;
     }

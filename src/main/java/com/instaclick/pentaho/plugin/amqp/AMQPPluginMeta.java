@@ -2,6 +2,7 @@ package com.instaclick.pentaho.plugin.amqp;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
 
 import org.eclipse.swt.widgets.Shell;
@@ -56,6 +57,7 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
     private static final String FIELD_BINDING_LINE_TARGET = "target_value";
     private static final String FIELD_BINDING_LINE_TARGET_TYPE = "target_type_value";
     private static final String FIELD_BINDING_LINE_ROUTING = "routing_value";
+    // TODO FIELD_HEADER ???
     private static final String FIELD_DECLARE = "declare";
     private static final String FIELD_DURABLE = "durable";
     private static final String FIELD_AUTODEL = "autodel";
@@ -133,6 +135,9 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
         }
     }
 
+    private final HashMap<String,String> headersNames2FieldsNames = new HashMap<String,String>();
+
+
     public AMQPPluginMeta()
     {
         super();
@@ -176,6 +181,17 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
                 final ValueMetaInterface r = new ValueMeta(space.environmentSubstitute(getDeliveryTagField()), ValueMeta.TYPE_INTEGER);
                 r.setOrigin(name);
                 inputRowMeta.addValueMeta(r);
+            }
+
+            final HashMap<String,String> h2f = getHeadersNames2FieldsNames();
+            System.out.println("starting to fill getHeadersNames2FieldsNames h2f: " + h2f.toString() );
+            System.out.println("getHeadersNames2FieldsNames().entrySet(): " + h2f.entrySet().toString() );
+            for ( Map.Entry<String,String> e : h2f.entrySet() ) {
+                if ( ! Const.isEmpty(e.getKey()) && ! Const.isEmpty(e.getValue()) ) {
+                    final ValueMetaInterface h = new ValueMeta(space.environmentSubstitute(e.getValue()), ValueMeta.TYPE_STRING);
+                    h.setOrigin(name);
+                    inputRowMeta.addValueMeta(h);
+                }
             }
         }
     }
@@ -430,6 +446,7 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
         this.rejectStepDeliveryTagField = "";
 
         bindings.clear();
+        headersNames2FieldsNames.clear();
     }
 
     @Override
@@ -843,6 +860,25 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
     public void clearBindings()
     {
         this.bindings.clear();
+    }
+
+
+    public void addHeaderName2FieldName(String header_name, String field_name)
+    {
+        logMinimal("addHeaderName2FieldName ::::::::::: ");
+        logMinimal(String.format("header_name: %s", header_name));
+        logMinimal(String.format("field_name: %s", field_name));
+        this.headersNames2FieldsNames.put(header_name, field_name);
+    }
+
+    public HashMap<String,String> getHeadersNames2FieldsNames()
+    {
+        return this.headersNames2FieldsNames;
+    }
+
+    public void clearHeadersNames2FieldsNames()
+    {
+        this.headersNames2FieldsNames.clear();
     }
 
 
