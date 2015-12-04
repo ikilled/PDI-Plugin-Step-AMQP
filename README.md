@@ -41,8 +41,9 @@ PDI Step Configuration
 | Delivery Tag          | Carry amqpDeliveryTag, used for confirmation                                  |
 | Exchange/Queue name   | The exchange name for producers or queue name for consumers                   |
 | Routing key           | Field that store the routing key                                              |
+| Message Headers       | Header Name, Field Name Max (mapping between headers and row field names)     |
 | Limit                 | Max number of message reads when using as consumer                            |
-| Declare               | work with pre configured Exchange, Queue and Binding ,or manage them by plugin|
+| Declare               | work with pre configured Exchange, Queue and Binding, or manage them by plugin|
 | Durable               | Durability for message                                                        |
 | Autodelete            | Autodelete Exchange or Queue after produce,consume                            |
 | Exclusive             | for queue , exclsuive usage                                                   |
