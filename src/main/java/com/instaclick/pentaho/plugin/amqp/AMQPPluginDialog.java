@@ -1439,6 +1439,7 @@ public class AMQPPluginDialog extends BaseStepDialog implements StepDialogInterf
         input.setMode(getFieldText(comboMode));
         input.setExchtype(getFieldText(comboExchtype));
         input.clearBindings();
+        input.clearHeadersNames2FieldsNames();
 
         if (Const.isEmpty(input.getUri()) && Const.isEmpty(input.getHost())) {
             textURI.setFocus();
@@ -1475,8 +1476,9 @@ public class AMQPPluginDialog extends BaseStepDialog implements StepDialogInterf
                 continue;
             }
 
-            logMinimal("input.addHeaderName2FieldName( header_name:"+header_name+", field_name:"+field_name+" ): ");
             input.addHeaderName2FieldName(header_name, field_name);
+            System.out.println("input.addHeaderName2FieldName: ADDED header_name:"+header_name+", field_name:"+field_name);
+
         }
 
 

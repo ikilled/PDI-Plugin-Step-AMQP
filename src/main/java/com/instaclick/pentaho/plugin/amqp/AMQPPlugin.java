@@ -139,7 +139,9 @@ public class AMQPPlugin extends BaseStep implements StepInterface
         // clone the input row structure and place it in our data object
         data.outputRowMeta = rowMeta;
         // use meta.getFields() to change it, so it reflects the output row structure
+        System.out.println("initPluginStep(): ENTERING getFields()..." );
         meta.getFields(rowMeta, getStepname(), null, null, this, repository, metaStore);
+        System.out.println("initPluginStep(): getFields EXITED!" );
 
         Integer port    = null;
         String body     = environmentSubstitute(meta.getBodyField());
@@ -168,12 +170,16 @@ public class AMQPPlugin extends BaseStep implements StepInterface
         data.bodyFieldIndex = data.outputRowMeta.indexOfValue(body);
         data.target         = environmentSubstitute(meta.getTarget());
         data.headersNamesFieldsIndexes = new HashMap<String,Integer>();
-        System.out.println("getHeadersNames2FieldsNames : "+meta.getHeadersNames2FieldsNames().toString() );
+        System.out.println("initPluginStep(): getHeadersNames2FieldsNames : "+meta.getHeadersNames2FieldsNames().entrySet() );
         String fieldName;
         // foreach header config row
         for ( String headerName : meta.getHeadersNames2FieldsNames().keySet() ) {
+            System.out.println("initPluginStep(): adding headerName: "+headerName+" to data.headersNamesFieldsIndexes" );
             fieldName = meta.getHeadersNames2FieldsNames().get(headerName);
-            data.headersNamesFieldsIndexes.put( fieldName, data.outputRowMeta.indexOfValue(fieldName) );
+            if ( data.outputRowMeta.indexOfValue(fieldName) > -1 )
+                data.headersNamesFieldsIndexes.put( headerName, data.outputRowMeta.indexOfValue(fieldName) ); // when index not found(returns -1)
+            if ( data.outputRowMeta.indexOfValue(fieldName) < -1 )
+                System.out.println("the fieldName "+fieldName+" was not found in outputRowMeta!");
         }
 
         

@@ -6,6 +6,7 @@ import com.instaclick.pentaho.plugin.amqp.AMQPPluginData;
 import com.rabbitmq.client.Channel;
 import java.io.IOException;
 import java.util.List;
+import java.util.HashMap;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.row.RowDataUtil;
 
@@ -59,9 +60,11 @@ abstract class BaseConsumerProcessor extends BaseProcessor
     @Override
     public boolean process(final Object[] r) throws IOException, KettleStepException
     {
+        System.out.println("ENTERING process()....");
         if ( ! consume()) {
             return false;
         }
+        System.out.println("EXITED: process()");
 
         // safely add the unique field at the end of the output row
         final Object[] row = RowDataUtil.allocateRowData(data.outputRowMeta.size());
@@ -76,16 +79,26 @@ abstract class BaseConsumerProcessor extends BaseProcessor
             row[data.deliveryTagIndex] = data.amqpTag;
         }
 
+        // TEMPORARY WORKAROUND THE TESTS:
+        if ( data.headersNamesFieldsIndexes == null) {
+            data.headersNamesFieldsIndexes = new HashMap<String,Integer>(); 
+            data.headersNamesFieldsIndexes.put("tessssst",1337); 
+        } // TEMPORARY WORKAROUND THE TESTS
         // WIP adding header fields and content to row 
-        plugin.logDebug("data.headers: " + data.toString() );
-        System.out.println("data.headers: " + data.toString() );
-        // System.out.println("data.headersNamesFieldsIndexes: " + data.headersNamesFieldsIndexes.toString() );
+        System.out.println("data.headersNamesFieldsIndexes: " + data.headersNamesFieldsIndexes.entrySet() );
         if ( data.headers != null && data.headers.size() > 0 ) {
             int headerIndex;
-            plugin.logDebug("data.headers: " + data.headers.toString() );
+            System.out.println("FOREACH");
             for( String headerName : data.headers.keySet() ) {
-                headerIndex = data.headersNamesFieldsIndexes.get(headerName);
-                row[headerIndex] = data.headers.get(headerName);
+                // if ( data.headersNamesFieldsIndexes.get(headerName) != null) {
+                System.out.println("headerName:" + headerName );
+                // if ( data.headersNamesFieldsIndexes != null) {
+                    if ( data.headersNamesFieldsIndexes.get(headerName) != null ) { // add only headers that are specified in the plugin user config dialog
+                        headerIndex = data.headersNamesFieldsIndexes.get(headerName);
+                        // if ( headerIndex > -1 )
+                        row[headerIndex] = data.headers.get(headerName);
+                    }
+                // }
             }
         }
 

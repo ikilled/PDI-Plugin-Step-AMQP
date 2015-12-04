@@ -21,6 +21,7 @@ public class BasicConsumerProcessor extends BaseConsumerProcessor
     @Override
     protected boolean consume() throws IOException
     {
+        System.out.println("ENTERED: consume()");
         final GetResponse response = channel.basicGet(data.target, false);
 
         if (response == null) {
@@ -31,25 +32,21 @@ public class BasicConsumerProcessor extends BaseConsumerProcessor
         final Envelope envelope                 = response.getEnvelope();
         final long tag                          = envelope.getDeliveryTag();
         final Map<String,Object> headers;
-        plugin.logDebug("response: "+response.toString());
+        // System.out.println("BasicConsumerProcessor consume(): response.getProps(): " + response.getProps() );
         if ( response.getProps() != null )
             headers = response.getProps().getHeaders();
         else
-            headers = new HashMap();
+            headers = new HashMap<String,Object>();
             // headers = null;
-        // final HashMap<String,Object> headers    = (HashMap)response.getProps().getHeaders();
-        // final HashMap<String,String> headers;
-        // final Map<String,Object> rawHeaders = response.getProps().getHeaders(); // getProps().getHeaders() got from: https://www.rabbitmq.com/releases/rabbitmq-java-client/v1.7.0/rabbitmq-java-client-javadoc-1.7.0/com/rabbitmq/client/GetResponse.html#getProps() OR Is it response.getProperties().getHeaders() as at https://github.com/dvoraka/AV-checker/blob/master/src/main/java/cz/nkp/edeposit/avchecker/AVReceiver.java#L70
-        // for (Map.Entry e : rawHeaders.keySet() ) {
-        //     headers.put(e.getKey(), (String)e.getValue() );
-        // }
 
         data.routing = envelope.getRoutingKey();
         data.body    = new String(body);
         data.amqpTag = tag;
         data.headers = headers;
 
+        System.out.println("CONSUME(): data.headers = "+data.headers.entrySet() );
 
+        System.out.println("consume() EXITING...");
 
         return true;
     }

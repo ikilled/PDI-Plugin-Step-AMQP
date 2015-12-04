@@ -36,6 +36,7 @@ import org.w3c.dom.Node;
 
 public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
 {
+    //  plugin configuration field names used when storing to  XML/kettleRepo (persistent)
     private static final String FIELD_TRANSACTIONAL = "transactional";
     private static final String FIELD_BODY_FIELD = "body_field";
     private static final String FIELD_ROUTING = "routing";
@@ -57,7 +58,10 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
     private static final String FIELD_BINDING_LINE_TARGET = "target_value";
     private static final String FIELD_BINDING_LINE_TARGET_TYPE = "target_type_value";
     private static final String FIELD_BINDING_LINE_ROUTING = "routing_value";
-    // TODO FIELD_HEADER ???
+    private static final String FIELD_HEADERS = "headers";
+    private static final String FIELD_HEADERS_LINE = "line";
+    private static final String FIELD_HEADERS_LINE_HEADER_NAME = "header_name";
+    private static final String FIELD_HEADERS_LINE_HEADER_FIELD = "target_type_value";
     private static final String FIELD_DECLARE = "declare";
     private static final String FIELD_DURABLE = "durable";
     private static final String FIELD_AUTODEL = "autodel";
@@ -183,17 +187,18 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
                 inputRowMeta.addValueMeta(r);
             }
 
-            final HashMap<String,String> h2f = getHeadersNames2FieldsNames();
-            System.out.println("starting to fill getHeadersNames2FieldsNames h2f: " + h2f.toString() );
-            System.out.println("getHeadersNames2FieldsNames().entrySet(): " + h2f.entrySet().toString() );
-            for ( Map.Entry<String,String> e : h2f.entrySet() ) {
-                if ( ! Const.isEmpty(e.getKey()) && ! Const.isEmpty(e.getValue()) ) {
-                    final ValueMetaInterface h = new ValueMeta(space.environmentSubstitute(e.getValue()), ValueMeta.TYPE_STRING);
+            System.out.println("getFields(): getHeadersNames2FieldsNames: " + getHeadersNames2FieldsNames().toString() );
+            for ( String headerName : getHeadersNames2FieldsNames().keySet() ) {
+                if ( ! Const.isEmpty(headerName) && ! Const.isEmpty(getHeadersNames2FieldsNames().get(headerName)) ) {
+                    final ValueMetaInterface h = new ValueMeta(space.environmentSubstitute(getHeadersNames2FieldsNames().get(headerName)), ValueMeta.TYPE_STRING);
                     h.setOrigin(name);
                     inputRowMeta.addValueMeta(h);
+                    System.out.println("getFields(): ADDED to row FIELD with NAME: "+getHeadersNames2FieldsNames().get(headerName) );
+
                 }
             }
         }
+        System.out.println("getFields(): EXITING." );
     }
 
     @Override
@@ -215,6 +220,9 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
     @Override
     public String getXML()
     {
+
+        System.out.println("ENTERED getXML");
+        
         final StringBuilder bufer = new StringBuilder();
 
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_TRANSACTIONAL, isTransactional()));
@@ -252,6 +260,15 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
         }
         bufer.append("    </" + FIELD_BINDING + ">").append(Const.CR);
 
+        bufer.append("    <" + FIELD_HEADERS + ">").append(Const.CR);
+        System.out.println("getHeadersNames2FieldsNames().keySet: " + getHeadersNames2FieldsNames().keySet().toString());
+        for (String headerName : getHeadersNames2FieldsNames().keySet()) {
+            bufer.append("      <" + FIELD_HEADERS_LINE + ">").append(Const.CR);
+            bufer.append("        ").append(XMLHandler.addTagValue(FIELD_HEADERS_LINE_HEADER_NAME, headerName));
+            bufer.append("        ").append(XMLHandler.addTagValue(FIELD_HEADERS_LINE_HEADER_FIELD, getHeadersNames2FieldsNames().get(headerName)));
+            bufer.append("      </" + FIELD_HEADERS_LINE + ">").append(Const.CR);
+        }
+        bufer.append("    </" + FIELD_HEADERS + ">").append(Const.CR);
 
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ACKSTEPNAME, getAckStepName()));
         bufer.append("   ").append(XMLHandler.addTagValue(FIELD_ACKDELIVERYTAG_FIELD, getAckStepDeliveryTagField()));
@@ -264,6 +281,7 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
     @Override
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore ims) throws KettleXMLException
     {
+        System.out.println("ENTERED loadXML.");
         try {
             setTransactional(XMLHandler.getTagValue(stepnode, FIELD_TRANSACTIONAL));
             setBodyField(XMLHandler.getTagValue(stepnode, FIELD_BODY_FIELD));
@@ -301,6 +319,18 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
                 String typeItem    = XMLHandler.getTagValue(lnode, FIELD_BINDING_LINE_TARGET_TYPE);
                 String routingItem = XMLHandler.getTagValue(lnode, FIELD_BINDING_LINE_ROUTING);
                 addBinding(targetItem, typeItem, routingItem);
+            }
+
+            Node headers = XMLHandler.getSubNode(stepnode, FIELD_HEADERS);
+            int headersCount    = XMLHandler.countNodes(headers, FIELD_HEADERS_LINE);
+
+            clearHeadersNames2FieldsNames();
+
+            for (int j = 0; j < headersCount; j++) {
+                Node lnode         = XMLHandler.getSubNodeByNr(headers, FIELD_HEADERS_LINE, j);
+                String headerNameItem  = XMLHandler.getTagValue(lnode, FIELD_HEADERS_LINE_HEADER_NAME);
+                String fieldNameItem    = XMLHandler.getTagValue(lnode, FIELD_HEADERS_LINE_HEADER_FIELD);
+                addHeaderName2FieldName(headerNameItem, fieldNameItem);
             }
 
 
@@ -353,6 +383,16 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
                 String typeItem    = rep.getStepAttributeString(idStep, i, FIELD_BINDING_LINE_TARGET_TYPE);
                 String routingItem = rep.getStepAttributeString(idStep, i, FIELD_BINDING_LINE_ROUTING);
                 addBinding(targetItem, typeItem, routingItem);
+            }
+
+            int nrHeadersLines = rep.countNrStepAttributes(idStep, FIELD_HEADERS_LINE_HEADER_NAME);
+
+            clearHeadersNames2FieldsNames();
+
+           for (int j = 0; j < nrHeadersLines; j++) {
+                String headerNameItem   = rep.getStepAttributeString(idStep, j, FIELD_HEADERS_LINE_HEADER_NAME);
+                String fieldNameItem    = rep.getStepAttributeString(idStep, j, FIELD_HEADERS_LINE_HEADER_FIELD);
+                addHeaderName2FieldName(headerNameItem, fieldNameItem);
             }
 
             setAckStepName(rep.getStepAttributeString(idStep, FIELD_ACKSTEPNAME));
@@ -865,10 +905,8 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
 
     public void addHeaderName2FieldName(String header_name, String field_name)
     {
-        logMinimal("addHeaderName2FieldName ::::::::::: ");
-        logMinimal(String.format("header_name: %s", header_name));
-        logMinimal(String.format("field_name: %s", field_name));
         this.headersNames2FieldsNames.put(header_name, field_name);
+        System.out.println("ADDED HeaderName: "+header_name+" to resolve to fieldName: "+field_name);
     }
 
     public HashMap<String,String> getHeadersNames2FieldsNames()
