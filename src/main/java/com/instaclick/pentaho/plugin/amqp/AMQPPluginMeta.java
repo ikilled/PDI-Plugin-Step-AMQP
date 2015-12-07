@@ -198,6 +198,10 @@ public class AMQPPluginMeta extends BaseStepMeta implements StepMetaInterface
                 }
             }
         }
+        else if (AMQPPluginData.MODE_PRODUCER.equals(mode)) {
+            System.out.println("getFields(): MODE_PRODUCER ! ");
+        }
+
         System.out.println("getFields(): EXITING." );
     }
 

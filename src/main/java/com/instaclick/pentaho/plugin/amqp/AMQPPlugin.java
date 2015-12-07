@@ -95,6 +95,7 @@ public class AMQPPlugin extends BaseStep implements StepInterface
         while ( ! isStopped()) {
 
             try {
+                System.out.println("processRow JUST BEFORE  processor.process(r)");
                 if ( ! processor.process(r)) {
 
                     setOutputDone();
@@ -216,6 +217,7 @@ public class AMQPPlugin extends BaseStep implements StepInterface
         data.isDeclare   = meta.isDeclare();
         data.isExclusive = meta.isExclusive();
 
+        System.out.println("initPluginStep() - data.routingIndex:"+data.routingIndex);
         if ( ! Const.isEmpty(routing)) {
             data.routingIndex = data.outputRowMeta.indexOfValue(routing);
 

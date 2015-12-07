@@ -6,6 +6,8 @@ import com.instaclick.pentaho.plugin.amqp.AMQPPluginData;
 import com.rabbitmq.client.Channel;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import org.pentaho.di.core.exception.KettleStepException;
 
 abstract class BaseProcessor implements Processor
@@ -45,6 +47,32 @@ abstract class BaseProcessor implements Processor
         return null;
     }
 
+    // // WIP WIP WIP WIP WIP WIP WIP WIP
+    protected Map<String,Object> getAmqpHeaders(final Object[] r) throws KettleStepException
+    {
+        System.out.println("ENTERED BaseProcessor getAmqpHeaders");
+        System.out.println("data.routingIndex:"+data.routingIndex);
+        System.out.println("headersNamesFieldsIndexes:"+data.headersNamesFieldsIndexes.keySet());
+        System.out.println("headersNames2FieldsNames:"+data.headersNames2FieldsNames.keySet());
+
+        HashMap<String,Object> headers = new HashMap<String,Object>(); //WIP
+        Integer rowFieldIndex;
+        System.out.println("constructing headers to be attached to produced amqp msg...");
+        for ( String headerName : data.headersNames2FieldsNames.keySet() ) {
+            rowFieldIndex = data.headersNamesFieldsIndexes.get(headerName);
+            if( rowFieldIndex != null ) {
+                System.out.println("headerName:"+headerName+",rowFieldIndex:"+rowFieldIndex+",content:"+r[rowFieldIndex]);
+                headers.put( headerName, r[rowFieldIndex] );
+            }
+        }
+
+        // logUndefinedRow(r, "Invalid headers", "ICAmqpPlugin003"); // EMPTY headers - it's okay to have no headers
+
+        return headers;
+
+    }
+    // // WIP WIP WIP WIP WIP WIP WIP WIP
+
     protected boolean hasAmqpRoutingKey(final Object[] r)
     {
         return rowContains(r, data.routingIndex);
@@ -54,6 +82,14 @@ abstract class BaseProcessor implements Processor
     {
         return rowContains(r, data.bodyFieldIndex);
     }
+
+    // // WIP WIP WIP WIP WIP WIP WIP WIP
+    // protected boolean hasAmqpHeaders(final Object[] r)
+    // {   
+    //     // foreach fieldnames2index do:
+    //         return rowContains(r, data.bodyFieldIndex); // (do it only once, one header is enough
+    // }
+    // // WIP WIP WIP WIP WIP WIP WIP WIP
 
     protected boolean rowContains(final Object[] r, final Integer index)
     {

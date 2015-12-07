@@ -19,6 +19,7 @@ public class ProducerProcessor extends BaseProcessor
     @Override
     public boolean process(Object[] r) throws KettleStepException, IOException
     {
+        System.out.println("PRODUCER process()....");
         if (r == null) {
             plugin.setOutputDone();
 
@@ -35,6 +36,9 @@ public class ProducerProcessor extends BaseProcessor
         data.routing = (data.routingIndex != null)
             ? getAmqpRoutingKey(r)
             : "";
+        data.headers    = getAmqpHeaders(r); // WIP
+        System.out.println("process data.headers.toString()"+data.headers.toString());
+        System.out.println("process JUST AFTER getAmqpHeaders call");
 
         // publish the current message
         channel.basicPublish(data.target, data.routing, new BasicProperties.Builder().headers(data.headers).build(), data.body.getBytes());
