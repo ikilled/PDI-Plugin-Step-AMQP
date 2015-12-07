@@ -41,7 +41,7 @@ PDI Step Configuration
 | Delivery Tag          | Carry amqpDeliveryTag, used for confirmation                                  |
 | Exchange/Queue name   | The exchange name for producers or queue name for consumers                   |
 | Routing key           | Field that store the routing key                                              |
-| Message Headers       | Header Name, Field Name Max (mapping between headers and row field names)     |
+| Message Headers       | Header Name, Field Name Map (mapping between headers and row field names)     |
 | Limit                 | Max number of message reads when using as consumer                            |
 | Declare               | work with pre configured Exchange, Queue and Binding, or manage them by plugin|
 | Durable               | Durability for message                                                        |
@@ -49,7 +49,7 @@ PDI Step Configuration
 | Exclusive             | for queue , exclsuive usage                                                   |
 | Binding               | Target, Routing, Target type ( queue or exchange in PRODUCER mode ) specified |
 | Wait for Messages     | Consumer waiting for messages mode                                            |
-| Wait Timeout          | Consumer waiting for messages mode, waiting tiemout, 0 for no timeout         |
+| Wait Timeout          | Consumer waiting for messages mode, waiting timeout, 0 for no timeout         |
 | PrefetchCount         | Consumer mode, basicQos parameter                                             |
 | Requeue               | For consumer. after receiving messages, Nack them with requeue flag           |
 
