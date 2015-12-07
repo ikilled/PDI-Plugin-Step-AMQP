@@ -46,7 +46,7 @@ PDI Step Configuration
 | Declare               | work with pre configured Exchange, Queue and Binding, or manage them by plugin|
 | Durable               | Durability for message                                                        |
 | Autodelete            | Autodelete Exchange or Queue after produce,consume                            |
-| Exclusive             | for queue , exclsuive usage                                                   |
+| Exclusive             | for queue , exclusuive usage                                                   |
 | Binding               | Target, Routing, Target type ( queue or exchange in PRODUCER mode ) specified |
 | Wait for Messages     | Consumer waiting for messages mode                                            |
 | Wait Timeout          | Consumer waiting for messages mode, waiting timeout, 0 for no timeout         |
